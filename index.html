@@ -212,6 +212,15 @@
             font-family: 'Roboto Mono', monospace; transition: all 0.3s;
         }
         .execute-btn:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 40px var(--neon-red); }
+        
+        /* New Vecna Challenge Button */
+        .vecna-btn {
+            display: inline-block; background: transparent; color: #fff; 
+            border: 2px solid var(--neon-red); padding: 15px 30px;
+            font-family: 'ITC Benguiat', serif; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 0 15px rgba(211,47,47,0.3); transition: all 0.3s; margin-top: 20px;
+        }
+        .vecna-btn:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 30px var(--neon-red); }
 
         #mini-error {
             display: none; background: rgba(211,47,47,0.2); border: 2px solid var(--neon-red);
@@ -284,6 +293,7 @@
             .dropdowns { flex-direction: column; width: 100%; gap: 10px; }
             .arcade-select { width: 100%; font-size: 1.1rem; padding: 12px; }
             .execute-btn { font-size: 1.2rem; padding: 15px; margin-top: 20px; }
+            .vecna-btn { font-size: 1rem; padding: 15px; width: 100%; box-sizing: border-box;}
             
             .gate-text { font-size: 2rem; }
             .chap { font-size: 0.65rem; }
@@ -318,7 +328,10 @@
                 <li><strong style="color:var(--neon-gold)">THE HUB:</strong> Zone 5 is the core. The operative assigned here <strong>must</strong> carry the Flamethrower.</li>
                 <li><strong style="color:var(--neon-gold)">HEAVY GEAR:</strong> The Flamethrower is too heavy. Whoever carries it can <strong>ONLY</strong> cover Zone 5 and no other zones.</li>
             </ul>
-            <p style="text-align: center; color: var(--neon-green); margin-top: 30px; font-weight: bold; animation: blink 1s infinite;">CONNECTION ESTABLISHING...</p>
+            <div style="text-align: center; margin-top: 30px;">
+                <p id="connection-status" style="color: var(--neon-green); font-weight: bold; margin-bottom: 15px;">CONNECTION ESTABLISHING...</p>
+                <button id="vecna-btn" class="vecna-btn" style="display: none;" onclick="enterUpsideDown()">ARE YOU READY TO FACE VECNA?</button>
+            </div>
         </div>
     </div>
 
@@ -727,12 +740,10 @@
             const zoneSelects = document.querySelectorAll('.zone-select');
             
             function updateDropdownLocks() {
-                // Get all selected values that are not "None"
                 const selectedZones = Array.from(zoneSelects)
                     .map(sel => sel.value)
                     .filter(val => val !== "None");
                 
-                // Loop through every dropdown and lock options chosen elsewhere
                 zoneSelects.forEach(select => {
                     Array.from(select.options).forEach(option => {
                         if (option.value === "None") {
@@ -746,7 +757,6 @@
                 });
             }
 
-            // Attach event listener to all zone dropdowns
             zoneSelects.forEach(sel => sel.addEventListener('change', updateDropdownLocks));
         }
 
@@ -978,19 +988,35 @@
                 gateWarn.style.display = 'none';
                 
                 document.getElementById('gate-transition').style.display = 'flex';
+                
+                // Reset connection UI for this breach
+                document.getElementById('connection-status').innerText = "CONNECTION ESTABLISHING...";
+                document.getElementById('connection-status').style.animation = "blink 1s infinite";
+                document.getElementById('connection-status').style.color = "var(--neon-green)";
+                document.getElementById('vecna-btn').style.display = 'none';
+
                 audioSys.triggerBreach();
 
+                // Wait 3 seconds, then secure connection and show button
                 setTimeout(() => {
-                    document.getElementById('gate-transition').style.display = 'none';
-                    document.body.classList.add('upside-down');
-                    document.getElementById('minigame-container').style.display = 'block';
-                }, 8000); // Wait 8 seconds so the player can read the instructions
+                    document.getElementById('connection-status').innerText = "CONNECTION SECURED";
+                    document.getElementById('connection-status').style.animation = "none";
+                    document.getElementById('vecna-btn').style.display = 'inline-block';
+                }, 3000);
+
             } else if (occ >= 0.45) {
                 if(warningActive) {
                     gateWarn.style.display = 'none'; warningActive = false;
                     if (audioSys.warn.volume > 0) audioSys.fadeOut(audioSys.warn);
                 }
             }
+        }
+
+        // --- MANUAL UPSIDE DOWN ENTRY ---
+        function enterUpsideDown() {
+            document.getElementById('gate-transition').style.display = 'none';
+            document.body.classList.add('upside-down');
+            document.getElementById('minigame-container').style.display = 'block';
         }
 
         // --- NATIVE MINI-GAME LOGIC & VALIDATION ---
@@ -1057,7 +1083,6 @@
                 
                 inUpsideDown = false; warningActive = false; recoveryBoost = 1.35; 
                 
-                // --- TIME SKIP: ADVANCE TO NEXT CHAPTER BUGFIX ---
                 log(`Time lost to the Upside Down. The current chapter is over.`, "alert");
                 
                 totalRev += chapRev; 
@@ -1080,7 +1105,7 @@
                 // RESET MINIGAME CHOICES FOR REPLAY AND UNLOCK
                 document.querySelectorAll('.arcade-select').forEach(sel => {
                     sel.selectedIndex = 0;
-                    Array.from(sel.options).forEach(opt => option.disabled = false);
+                    Array.from(sel.options).forEach(opt => opt.disabled = false);
                 });
 
                 setTimeout(() => { document.body.classList.remove('sealing-sequence'); }, 1000);
