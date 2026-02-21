@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stranger Cinemas: The Hawkins Saga</title>
+    <link href="https://fonts.googleapis.com/css2?family=Benguiat&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --neon-red: #d32f2f;
+            --neon-glow: #ff0000;
+            --neon-green: #00e676;
+            --neon-cyan: #00e5ff;
+            --neon-gold: #ffd700;
+            --panel: rgba(15, 15, 15, 0.95);
+            --text: #c0c0c0;
+        }
+
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Roboto Mono', monospace;
+            margin: 0; padding: 20px;
+            height: 100vh; overflow: hidden;
+            background-image: radial-gradient(circle at center, #220000 0%, #000 100%);
+            transition: all 1s;
+        }
+
+        /* --- VISUAL EFFECTS --- */
+        body::before {
+            content: " "; display: block; position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 50; background-size: 100% 2px, 3px 100%; pointer-events: none;
+        }
+
+        body.upside-down {
+            filter: invert(0.1) sepia(0.8) hue-rotate(-50deg) saturate(3) contrast(1.2);
+            animation: breathe 4s infinite;
+        }
+        @keyframes breathe { 0% { opacity: 0.9; } 50% { opacity: 1; } 100% { opacity: 0.9; } }
+        
+        .spore {
+            position: fixed; background: rgba(255,255,255,0.2);
+            width: 4px; height: 4px; border-radius: 50%;
+            pointer-events: none; animation: float 10s linear infinite; display: none; z-index: 60;
+        }
+        body.upside-down .spore { display: block; }
+        @keyframes float { 
+            0% { transform: translateY(100vh) translateX(0); opacity:0; } 
+            50% { opacity: 0.8; } 
+            100% { transform: translateY(-100px) translateX(50px); opacity:0; } 
+        }
+
+        /* Cinematic Gate Transition Overlay */
+        #gate-transition {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 900; justify-content: center; align-items: center; flex-direction: column;
+            text-align: center;
+        }
+        .gate-text {
+            color: var(--neon-red); font-family: 'ITC Benguiat', serif; font-size: 4rem;
+            text-shadow: 0 0 20px var(--neon-red); animation: pulseAlert 0.5s infinite; margin-bottom: 20px;
+        }
+        @keyframes pulseAlert { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        @keyframes sealGate {
+            0% { filter: invert(1) contrast(2); transform: scale(1.02) skew(2deg); }
+            20% { filter: hue-rotate(90deg) blur(2px); background: #fff; }
+            40% { filter: invert(0) contrast(1.5) sepia(1); transform: scale(0.95); }
+            60% { background: #000; opacity: 0; }
+            80% { opacity: 0.5; filter: none; }
+            100% { opacity: 1; transform: none; background: var(--bg); }
+        }
+        .sealing-sequence { animation: sealGate 2s ease-in-out forwards; }
+
+        h1 {
+            font-family: 'ITC Benguiat', serif; color: transparent;
+            -webkit-text-stroke: 1.5px var(--neon-red); text-shadow: 0 0 15px var(--neon-glow);
+            font-size: 3rem; text-align: center; text-transform: uppercase; margin-bottom: 20px;
+        }
+
+        .grid {
+            display: grid; grid-template-columns: 300px 1fr 300px; gap: 20px;
+            height: calc(100vh - 120px); position: relative; z-index: 10;
+        }
+
+        .panel {
+            background: var(--panel); border: 1px solid #333; padding: 20px; border-radius: 8px;
+            display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            height: 100%; box-sizing: border-box; overflow: hidden;
+        }
+
+        .panel-header { flex-shrink: 0; margin-bottom: 10px; }
+        .panel-content { flex: 1; overflow-y: auto; margin-bottom: 15px; padding-right: 5px; scrollbar-width: thin; scrollbar-color: #444 #111; }
+        .panel-footer { flex-shrink: 0; margin-top: auto; }
+
+        .chapters { display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .chap { font-family: 'ITC Benguiat', serif; font-size: 0.8rem; color: #555; text-align: center; flex: 1; }
+        .chap.active { color: var(--neon-red); text-shadow: 0 0 5px var(--neon-red); }
+        .chap.done { color: #444; text-decoration: line-through; }
+
+        .slots { display: flex; gap: 5px; margin-bottom: 15px; }
+        .slot-btn { flex: 1; background: #111; border: none; color: #666; padding: 10px; cursor: pointer; }
+        .slot-btn.active { background: #222; color: #fff; border-bottom: 2px solid var(--neon-red); }
+
+        .row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; margin-bottom: 8px; border-left: 3px solid #333; }
+        .row.active { border-left-color: var(--neon-red); }
+
+        .qty { display: flex; align-items: center; gap: 10px; }
+        .q-btn { width: 25px; height: 25px; background: #222; border: 1px solid #555; color: #fff; cursor: pointer; transition: 0.2s; }
+        .q-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .price-badge { background: #111; padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; width: 50px; text-align: center; user-select: none; transition: all 0.2s; }
+        .price-badge:hover { filter: brightness(1.2); }
+        .price-low { color: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 5px rgba(0,230,118,0.2); }
+        .price-std { color: #fff; border-color: #666; }
+        .price-high { color: var(--neon-red); border-color: var(--neon-red); box-shadow: 0 0 5px rgba(211,47,47,0.2); }
+        
+        .locked-controls { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
+
+        .log-box { font-size: 0.75rem; color: #aaa; font-family: 'Courier New', monospace; line-height: 1.4; }
+        .log-alert { color: var(--neon-red); }
+        .log-sys { color: #4caf50; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; align-items: center; }
+        .modal { background: #111; border: 2px solid var(--neon-red); padding: 40px; width: 500px; text-align: center; box-shadow: 0 0 50px var(--neon-red); max-height: 90vh; overflow-y: auto;}
+
+        /* DIARY NOTEBOOK PAGE TURNER STYLE */
+        .notebook {
+            background: #fffdf2; color: #000; font-family: 'Courier New', Courier, monospace;
+            padding: 30px; text-align: left; background-image: linear-gradient(#999 1px, transparent 1px);
+            background-size: 100% 1.5em; line-height: 1.5em; border-left: 4px solid var(--neon-red);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.8);
+            width: 450px; min-height: 450px; display: flex; flex-direction: column;
+        }
+        .notebook h3 { font-family: 'ITC Benguiat', serif; color: var(--neon-red); margin-top: 0; text-transform: uppercase; }
+        #diary-content { flex: 1; }
+        .diary-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; font-weight: bold; }
+        .diary-btn { background: #222; color: #fff; border: 2px solid #000; padding: 8px 15px; cursor: pointer; font-family: 'ITC Benguiat', serif; }
+        .diary-btn:hover { background: var(--neon-red); color: #000; }
+        .diary-close { margin-top: 15px; width: 100%; background: #000; color: #fff; padding: 10px; border: 1px solid #333; cursor: pointer; font-family: 'ITC Benguiat', serif; text-transform: uppercase; }
+
+        /* GAME TOOLS */
+        #game-tools { display: none; position: fixed; top: 20px; right: 20px; z-index: 1200; display: flex; gap: 15px; }
+        .lore-btn { background: rgba(10, 10, 10, 0.8); color: var(--neon-red); border: 2px solid var(--neon-red); font-family: 'ITC Benguiat', serif; padding: 10px 15px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(211, 47, 47, 0.4); transition: 0.3s; font-size: 1rem; }
+        .lore-btn:hover { background: var(--neon-red); color: #000; text-shadow: none; box-shadow: 0 0 20px var(--neon-red); }
+
+        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; transition: opacity 0.5s; }
+        .intro-box { border: 4px double var(--neon-red); padding: 40px; max-width: 700px; background: rgba(10,10,10,0.95); box-shadow: 0 0 40px rgba(211,47,47,0.3); position: relative; }
+        .intro-title { font-family: 'ITC Benguiat', serif; font-size: 3rem; color: var(--neon-red); text-shadow: 0 0 10px var(--neon-glow); margin-bottom: 20px; letter-spacing: 2px; }
+        
+        #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 150; display: none; transition: opacity 0.5s; }
+        #video-container video { width: 100%; height: 100%; object-fit: contain; }
+        
+        .skip-btn { position: fixed; bottom: 30px; right: 30px; z-index: 1000; background: #222; color: #fff; border: 1px solid #444; padding: 15px; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+        .skip-btn:hover { background: var(--neon-red); border-color: var(--neon-red); color: black; }
+
+        /* --- NATIVE MINIGAME CSS --- */
+        #minigame-container { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; 
+            background: #0d0707; padding: 40px 20px; overflow-y: auto;
+            border: 10px solid #1b1b1b; box-sizing: border-box;
+            background-image: radial-gradient(circle at center, rgba(255, 0, 51, 0.1) 0%, transparent 70%);
+        }
+        .mini-header { text-align: center; margin-bottom: 30px; }
+        .arcade-title { font-family: 'ITC Benguiat', serif; color: #fff; font-size: 3rem; margin: 0; letter-spacing: 2px; text-shadow: 0 0 10px var(--neon-red); }
+        .sub-title { color: #888; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; }
+        
+        .zone-grid { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; flex-wrap: wrap; }
+        .zone-box { 
+            width: 110px; height: 65px; border: 1px solid rgba(0, 229, 255, 0.3); background: rgba(0, 229, 255, 0.05);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border-radius: 4px; transition: 0.3s; box-shadow: inset 0 0 10px rgba(0,229,255,0.05);
+        }
+        .zone-box span { color: var(--neon-cyan); font-weight: bold; text-shadow: 0 0 8px rgba(0,229,255,0.5); font-size: 1.1rem; }
+        .zone-box small { color: #888; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+        
+        .zone-hub { border-color: rgba(211,47,47,0.5); background: rgba(211,47,47,0.05); box-shadow: 0 0 15px rgba(211,47,47,0.2); width: 140px;}
+        .zone-hub span { color: var(--neon-red); text-shadow: 0 0 8px rgba(211,47,47,0.8); }
+        .zone-hub small { color: #d32f2f; }
+
+        .command-stack { max-width: 700px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+        .command-card { 
+            background: linear-gradient(90deg, rgba(0,229,255,0.05) 0%, rgba(0,0,0,0) 100%); 
+            border: 1px solid rgba(0, 229, 255, 0.3); border-left: 4px solid var(--neon-cyan);
+            padding: 15px 25px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .command-card.gold { 
+            background: linear-gradient(90deg, rgba(255,215,0,0.05) 0%, rgba(0,0,0,0) 100%); 
+            border: 1px solid rgba(255, 215, 0, 0.4); border-left: 4px solid var(--neon-gold);
+        }
+        .char-name { font-weight: bold; color: var(--neon-cyan); text-shadow: 0 0 8px rgba(0,229,255,0.4); font-size: 1.2rem; letter-spacing: 1px; }
+        .gold .char-name { color: var(--neon-gold); text-shadow: 0 0 8px rgba(255,215,0,0.4); margin-bottom: 5px;}
+        
+        .dropdowns { display: flex; gap: 15px; }
+        .drop-group { display: flex; flex-direction: column; }
+        .drop-group label { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 5px; }
+        .arcade-select { 
+            background: #000; color: #ccc; border: 1px solid #444; padding: 8px 10px; 
+            font-family: 'Roboto Mono', monospace; min-width: 120px; outline: none; cursor: pointer;
+        }
+        .arcade-select:focus { border-color: var(--neon-cyan); color: #fff; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+        .gold .arcade-select:focus { border-color: var(--neon-gold); box-shadow: 0 0 8px rgba(255,215,0,0.3);}
+        
+        .execute-btn {
+            width: 100%; max-width: 450px; margin: 40px auto 0; display: block;
+            background: transparent; color: #fff; font-size: 1.5rem; font-weight: bold;
+            padding: 20px; border: 2px solid var(--neon-red); text-transform: uppercase;
+            cursor: pointer; box-shadow: 0 0 20px var(--neon-red), inset 0 0 20px rgba(211,47,47,0.2);
+            font-family: 'Roboto Mono', monospace; transition: all 0.3s;
+        }
+        .execute-btn:hover { background: var(--neon-red); color: #000; box-shadow: 0 0 40px var(--neon-red); }
+
+        #mini-error {
+            display: none; background: rgba(211,47,47,0.2); border: 2px solid var(--neon-red);
+            color: #fff; padding: 15px; margin: 20px auto; max-width: 450px; text-align: center;
+            font-family: 'Courier New', monospace; box-shadow: 0 0 10px rgba(211,47,47,0.5);
+        }
+
+        .coin-btn { background: transparent; color: #fff; border: 2px solid #fff; padding: 15px 40px; font-family: 'ITC Benguiat', serif; font-size: 1.2rem; cursor: pointer; animation: text-pulse 2s infinite; }
+        .coin-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
+        @keyframes text-pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+        .warn-bar { display: none; background: #d32f2f; color: black; padding: 10px; text-align: center; font-weight: bold; animation: blink 1s infinite; margin-top: auto; }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        .stat-big { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+        .occ-track { width: 100%; height: 6px; background: #333; }
+        .occ-fill { height: 100%; width: 0%; background: #4caf50; transition: 0.5s; }
+
+        .main-btn { width: 100%; padding: 15px; background: #222; color: #fff; border: 1px solid #444; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: all 0.2s; margin-top: 10px;}
+        .main-btn:hover { background: var(--neon-red); border-color: var(--neon-red); color: black; }
+        
+        .dice-result { font-size: 4rem; color: var(--neon-red); font-family: 'ITC Benguiat'; text-shadow: 0 0 20px var(--neon-red); margin: 20px 0; min-height: 80px; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="intro-box">
+            <div class="intro-title">STRANGER CINEMAS</div>
+            <p style="color: #ccc; font-family: 'Courier New';">SYSTEM: MANAGER_TERMINAL_V2<br>OBJECTIVE: MAXIMIZE REVENUE // CONTAIN BREACH</p>
+            <button class="coin-btn" onclick="playTeaser()">INSERT COIN TO START</button>
+        </div>
+    </div>
+
+    <div id="video-container">
+        <video id="teaser-video" src="Final Teaser.mp4" playsinline onended="startGameFromVideo()"></video>
+        <button class="skip-btn" onclick="startGameFromVideo()">SKIP TEASER >></button>
+    </div>
+
+    <div id="gate-transition">
+        <h1 class="gate-text">THE GATES ARE OPENING...</h1>
+        <p style="color:#fff; font-family: 'Courier New'; letter-spacing: 2px;">PREPARE FOR INCURSION</p>
+    </div>
+
+    <div id="minigame-container">
+        <div class="mini-header">
+            <h1 class="arcade-title text-glow-red">STRANGER OPS</h1>
+            <div class="sub-title">Tactical Command Interface // The Upside Down Incursion</div>
+        </div>
+
+        <div style="text-align:center; margin-bottom: 10px;">
+            <span style="color:var(--neon-red); font-size:0.7rem; letter-spacing: 0.3em;">THEATER CROSS-SECTION</span>
+        </div>
+
+        <div class="zone-grid">
+            <div class="zone-box"><span>Zone 1</span><small>T-High</small></div>
+            <div class="zone-box"><span>Zone 2</span><small>T-High</small></div>
+            <div class="zone-box"><span>Zone 3</span><small>T-Mid</small></div>
+            <div class="zone-box"><span>Zone 4</span><small>T-Mid</small></div>
+            <div class="zone-box zone-hub">
+                <span>Zone 5</span>
+                <small>The Hub</small>
+            </div>
+        </div>
+
+        <div class="command-stack">
+            <div class="command-card">
+                <div class="char-name">STEVE HARRINGTON</div>
+                <div class="dropdowns">
+                    <div class="drop-group">
+                        <label>Zone A</label>
+                        <select id="steve-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                    <div class="drop-group">
+                        <label>Zone B</label>
+                        <select id="steve-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="command-card">
+                <div class="char-name">JIM HOPPER</div>
+                <div class="dropdowns">
+                    <div class="drop-group">
+                        <label>Zone A</label>
+                        <select id="hopper-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                    <div class="drop-group">
+                        <label>Zone B</label>
+                        <select id="hopper-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="command-card">
+                <div class="char-name">NANCY WHEELER</div>
+                <div class="dropdowns">
+                    <div class="drop-group">
+                        <label>Zone A</label>
+                        <select id="nancy-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                    <div class="drop-group">
+                        <label>Zone B</label>
+                        <select id="nancy-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                    </div>
+                </div>
+            </div>
+            <div class="command-card gold">
+                <div>
+                    <div class="char-name">🔥 FLAMETHROWER OP</div>
+                    <small style="color: var(--neon-gold); font-family: 'Courier New', monospace;">(Heavy Weapon - allot wisely)</small>
+                </div>
+                <div class="dropdowns">
+                    <div class="drop-group">
+                        <label>Carrier</label>
+                        <select id="carrier" class="arcade-select"><option>-- Select --</option><option>Steve</option><option>Hopper</option><option>Nancy</option></select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="mini-error"></div>
+
+        <button class="execute-btn" id="seal-btn" onclick="attemptSeal()">⚡ EXECUTE STRATEGY ⚡</button>
+        <div style="text-align:center; color:#555; margin-top:30px; font-size:0.75rem; font-family: 'Courier New'; letter-spacing: 1px;">◆ HAWKINS NATIONAL LABORATORY ◆ OPERATION: VECNA ◆</div>
+    </div>
+
+    <div id="game-tools">
+        <button class="lore-btn" onclick="document.getElementById('diary-modal').style.display='flex'">Nancy's Diary</button>
+        <button class="lore-btn" onclick="document.getElementById('clues-modal').style.display='flex'">Clues</button>
+    </div>
+
+    <div class="spore" style="left:10%; animation-duration: 8s;"></div>
+    <div class="spore" style="left:50%; animation-duration: 12s;"></div>
+    <div class="spore" style="left:80%; animation-duration: 9s;"></div>
+
+    <h1>Stranger Cinemas: The Hawkins Saga</h1>
+
+    <div class="grid">
+        <div class="panel">
+            <h3 class="panel-header">Mission Log</h3>
+            <div class="panel-content log-box" id="log">
+                <div>> SYSTEM ONLINE...</div>
+                <div>> AWAITING START COMMAND...</div>
+            </div>
+            <div class="panel-footer">
+                <button id="next-chap-btn" class="main-btn">START CAMPAIGN</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="chapters panel-header">
+                <div class="chap" id="ch-1">CHAP 1<br>Vanishing Weekdays</div>
+                <div class="chap" id="ch-2">CHAP 2<br>The Friday Nightmare</div>
+                <div class="chap" id="ch-3">CHAP 3<br>Battle of Weekend</div>
+            </div>
+
+            <div class="slots panel-header">
+                <button class="slot-btn active" onclick="setSlot('Morning')" id="btn-Morning">Morn</button>
+                <button class="slot-btn" onclick="setSlot('Afternoon')" id="btn-Afternoon">Aft</button>
+                <button class="slot-btn" onclick="setSlot('Evening')" id="btn-Evening">Eve</button>
+                <button class="slot-btn" onclick="setSlot('Night')" id="btn-Night">Night</button>
+            </div>
+
+            <div class="panel-header" style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>SCREENS (MAX 5):</span> <span id="screens" style="color:#fff; font-weight:bold;">5</span>
+            </div>
+
+            <div class="panel-content locked-controls" id="movie-list"></div>
+        </div>
+
+        <div class="panel">
+            <h3 class="panel-header">Cinema Vitals</h3>
+            <div class="panel-content">
+                <div style="margin-bottom: 20px;">
+                    <small>REVENUE</small>
+                    <div class="stat-big" id="rev">₹0</div>
+                </div>
+                <div>
+                    <small>OCCUPANCY</small>
+                    <div class="stat-big" id="occ">0%</div>
+                    <div class="occ-track"><div class="occ-fill" id="occ-bar"></div></div>
+                </div>
+            </div>
+            <div class="panel-footer">
+                <div class="warn-bar" id="gate-warn">⚠️ WARNING: READINGS DROPPING</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="tutorial-modal" style="display:none; z-index: 200;">
+        <div class="modal" style="max-width: 600px;">
+            <h2 style="color:var(--neon-green)">MANAGER PROTOCOL</h2>
+            <div style="color:#ccc; text-align:left; font-size: 1rem; font-family: 'Courier New'; line-height: 1.6;">
+                <p>Welcome to the Terminal. Before you begin Chapter 1, memorize these controls:</p>
+                <ol>
+                    <li><strong>TIME SLOTS:</strong> Click Morn, Aft, Eve, or Night to view the schedule for that time.</li>
+                    <li><strong>SCREENS:</strong> Use the <b>[ + ]</b> and <b>[ - ]</b> buttons to allocate your 5 screens.</li>
+                    <li><strong>PRICING:</strong> Click the badge (STD/LOW/HIGH) to set ticket prices. Low boosts attendance, High boosts revenue.</li>
+                    <li><strong>THE DICE:</strong> You must face a crisis before every chapter.</li>
+                </ol>
+                <p style="color: var(--neon-red); text-align: center; font-weight: bold;">NEVER LET OCCUPANCY DROP BELOW 40%.</p>
+            </div>
+            <button onclick="document.getElementById('tutorial-modal').style.display='none'; triggerCrisis(0);" class="main-btn">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="crisis-modal" style="display:none; z-index: 1050;">
+        <div class="modal">
+            <h2 id="crisis-title" style="color:var(--neon-red)">CRISIS</h2>
+            <p id="crisis-desc" style="color:#ccc; margin-bottom:20px; white-space: pre-line;">...</p>
+            
+            <div id="dice-container">
+                <div style="font-size:0.8rem; color:#888;">ROLL THE DICE (2-12)</div>
+                <div class="dice-result" id="dice-display">?</div>
+                <button onclick="rollDice()" class="main-btn" id="roll-btn">ROLL D20</button>
+            </div>
+            
+            <button id="crisis-ok-btn" onclick="document.getElementById('crisis-modal').style.display='none'; startChapterLogic();" class="main-btn" style="display:none;">PROCEED</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="diary-modal" style="display:none;">
+        <div class="modal notebook">
+            <div id="diary-content"></div>
+            <div class="diary-controls">
+                <button class="diary-btn" onclick="prevDiaryPage()">&#9664; PREV</button>
+                <span id="diary-page-indicator" style="color: #555;">1 / 6</span>
+                <button class="diary-btn" onclick="nextDiaryPage()">NEXT &#9654;</button>
+            </div>
+            <button class="diary-close" onclick="document.getElementById('diary-modal').style.display='none'">CLOSE DIARY</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="clues-modal" style="display:none;">
+        <div class="modal" style="width: auto; max-width: 800px; padding: 20px;">
+            <h3 style="font-family: 'ITC Benguiat'; color: var(--neon-red); margin-top: 0;">OFFICIAL GUIDES</h3>
+            <img src="guides.jpg" alt="Stranger Cinemas Guide" style="max-width: 100%; height: auto; border: 2px solid #333;">
+            <button onclick="document.getElementById('clues-modal').style.display='none'" class="main-btn" style="margin-top: 20px;">CLOSE CLUES</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="end-modal" style="display:none; z-index: 2000;">
+        <div class="modal" style="width:600px;">
+            <h2 style="font-family:'ITC Benguiat', serif; color:var(--neon-red);">CAMPAIGN SUMMARY</h2>
+            <div id="end-stats" style="text-align:left; color:#ccc; line-height:1.6; font-family:'Courier New', monospace;"></div>
+            <br>
+            <button onclick="location.reload()" class="main-btn">REPLAY CAMPAIGN</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DIARY PAGE TURNER LOGIC ---
+        let currentDiaryPage = 0;
+        const diaryPages = [
+            `<h3>Log #01: The Anomaly</h3>
+             <p><strong>THE 40% RULE:</strong><br><br>I checked the grid. The barrier stabilizes when there are people in the room. If occupancy drops below 40%, the signal fails.</p>
+             <p style="color:var(--neon-red); font-weight:bold;">40% ABOVE IS NECESSARY FOR SURVIVAL.</p>
+             <p>CRITICAL WARNING: The gate opens at < 40%. We need real people in seats. Profits don't matter. Dropping the prices to fill the room will be necessary.</p>`,
+            
+            `<h3>Log #02: The Time</h3>
+             <p><strong>MORNINGS (10 AM):</strong><br>The mall is dead. Strategy: keep prices low (Volume > Profit).</p>
+             <p><strong>EVENINGS (6 PM):</strong><br>Peak hours, everyone is here. Strategy: keep prices high (Cover the losses).</p>
+             <p><strong>AUDIO INTEL:</strong><br>- Low Hum: We are borderline close to danger (40-45%).<br>- Screeching: THERE IS A BREACH.<br>- Synthwave: We are safe.</p>`,
+
+            `<h3>Log #03: Breach Reasons</h3>
+             <p><strong>ACTOR SCANDAL:</strong><br><br>Public opinion runs the market. If an actor scandal hits, revenue and capacity is lost.</p>
+             <p>We need to diversify the shows we run to survive the blow.</p>`,
+
+            `<h3>Log #04: Equipment Failure</h3>
+             <p><strong>PROJECTOR FAILURE:</strong><br><br>If the projector or other equipment fails, the total capacity will drop.</p>
+             <p>If we keep the occupancy rate at exactly 41% (borderline) and this happens, we will immediately drop to 38% and face a breach.</p>
+             <p style="font-weight:bold;">WE NEED TO KEEP A BUFFER.</p>`,
+
+            `<h3>Log #05: The Weekend</h3>
+             <p><strong>INDIE AWARD:</strong><br>If an Indie movie wins an award, people might watch it like a cult movie. We could raise prices then.</p>
+             <p><strong>INDIE DRAMA:</strong><br>Can't ignore the nerds. We will have to allot a few screens to Indie movies on the weekend (Chapter 3). Otherwise, the Hellfire Club will riot on the streets. We don't want that.</p>`,
+
+            `<h3>Log #06: The Gates Opened</h3>
+             <p style="color:var(--neon-red); font-weight:bold;">SURVIVAL PROTOCOL: THE UPSIDE DOWN</p>
+             <p>If we breach, Steve, Hopper and I (Nancy) will have to enter the Upside Down and seal the rift.</p>
+             <ul style="padding-left:15px; font-size:0.9rem;">
+                <li>Assign our operatives to cover all breached zones (Zones 1-4). <strong>Every zone must be unique, do not overlap operatives.</strong></li>
+                <li>The HUB (Zone 5) is the heart of the breach.</li>
+                <li>Whoever enters The HUB <strong>MUST</strong> be equipped with the FLAMETHROWER to burn the vines! The flamethrower is heavy, so that operative can ONLY cover The Hub.</li>
+             </ul>
+             <p>Execute the strategy perfectly, or we don't come back.</p>`
+        ];
+
+        function renderDiaryPage() {
+            document.getElementById('diary-content').innerHTML = diaryPages[currentDiaryPage];
+            document.getElementById('diary-page-indicator').innerText = `${currentDiaryPage + 1} / ${diaryPages.length}`;
+        }
+        function prevDiaryPage() { if(currentDiaryPage > 0) { currentDiaryPage--; renderDiaryPage(); } }
+        function nextDiaryPage() { if(currentDiaryPage < diaryPages.length - 1) { currentDiaryPage++; renderDiaryPage(); } }
+        
+        renderDiaryPage();
+
+        // --- SEQUENCE CONTROL ---
+        let gameActive = false; 
+
+        function playTeaser() {
+            document.getElementById('start-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('start-screen').style.display = 'none';
+                document.getElementById('video-container').style.display = 'block';
+                const video = document.getElementById('teaser-video');
+                video.play().catch(e => console.log("Video autoplay blocked", e));
+            }, 500);
+        }
+
+        function startGameFromVideo() {
+            const videoContainer = document.getElementById('video-container');
+            const video = document.getElementById('teaser-video');
+            video.pause();
+            videoContainer.style.opacity = '0';
+            
+            setTimeout(() => {
+                videoContainer.style.display = 'none';
+                document.getElementById('game-tools').style.display = 'flex'; 
+                updateView(); 
+                if(audioSys.warn) { audioSys.warn.load(); }
+            }, 500);
+        }
+
+        // --- AUDIO SYSTEM ---
+        const audioSys = {
+            warn: new Audio('sfx upside down.mp3'),
+            enter: new Audio('sfx - entering the upside down.mp3'),
+            leave: new Audio('sfx - trying to leave the upside down.mp3'),
+            intervals: new Map(),
+
+            init: function() {
+                this.warn.loop = true; this.leave.loop = true; 
+                this.enter.onended = () => { this.playTheme(); };
+            },
+            fadeIn: function(a) {
+                this.clearIntervals(a); a.volume = 0; a.play().catch(e=>{});
+                const i = setInterval(() => { if(a.volume < 0.95) a.volume += 0.05; else { a.volume = 1.0; clearInterval(i); this.intervals.delete(a); } }, 100); 
+                this.intervals.set(a, i);
+            },
+            fadeOut: function(a) {
+                this.clearIntervals(a); if (a.paused) return;
+                const i = setInterval(() => { if(a.volume > 0.05) a.volume -= 0.05; else { a.volume = 0; a.pause(); a.currentTime = 0; clearInterval(i); this.intervals.delete(a); } }, 100); 
+                this.intervals.set(a, i);
+            },
+            clearIntervals: function(a) { if(this.intervals.has(a)) { clearInterval(this.intervals.get(a)); this.intervals.delete(a); } },
+            triggerWarning: function() { this.fadeOut(this.enter); this.fadeOut(this.leave); this.fadeIn(this.warn); },
+            triggerBreach: function() { this.fadeOut(this.warn); this.fadeOut(this.leave); this.fadeIn(this.enter); },
+            triggerSafe: function() { this.fadeOut(this.warn); if (!this.enter.paused) this.fadeOut(this.enter); if (this.leave.paused) this.fadeIn(this.leave); },
+            playTheme: function() { this.fadeOut(this.warn); this.fadeIn(this.leave); },
+            stopAll: function() { this.fadeOut(this.warn); this.fadeOut(this.enter); this.fadeOut(this.leave); }
+        };
+
+        const config = {
+            occupancy: {
+                "Chapter 1": { "Morning": {"Blockbuster": 0.35, "Mid": 0.45, "Indie": 0.40, "Regional": 0.35}, "Afternoon": {"Blockbuster": 0.45, "Mid": 0.50, "Indie": 0.40, "Regional": 0.40}, "Evening": {"Blockbuster": 0.75, "Mid": 0.60, "Indie": 0.55, "Regional": 0.50}, "Night": {"Blockbuster": 0.65, "Mid": 0.55, "Indie": 0.65, "Regional": 0.60} },
+                "Chapter 2": { "Morning": {"Blockbuster": 0.40, "Mid": 0.45, "Indie": 0.35, "Regional": 0.30}, "Afternoon": {"Blockbuster": 0.55, "Mid": 0.55, "Indie": 0.45, "Regional": 0.45}, "Evening": {"Blockbuster": 0.85, "Mid": 0.65, "Indie": 0.60, "Regional": 0.60}, "Night": {"Blockbuster": 0.80, "Mid": 0.60, "Indie": 0.70, "Regional": 0.65} },
+                "Chapter 3": { "Morning": {"Blockbuster": 0.60, "Mid": 0.55, "Indie": 0.40, "Regional": 0.40}, "Afternoon": {"Blockbuster": 0.75, "Mid": 0.65, "Indie": 0.50, "Regional": 0.50}, "Evening": {"Blockbuster": 0.95, "Mid": 0.75, "Indie": 0.70, "Regional": 0.75}, "Night": {"Blockbuster": 0.90, "Mid": 0.70, "Indie": 0.60, "Regional": 0.60} }
+            },
+            saturation: {
+                "Blockbuster": [1.0, 0.95, 0.70, 0.50, 0.30], "Mid": [1.0, 0.90, 0.80, 0.70, 0.60], 
+                "Indie": [1.0, 0.80, 0.50, 0.30, 0.10], "Regional": [1.0, 0.85, 0.60, 0.40, 0.20]
+            },
+            crisis: [
+                { "id": "actor_scandal", "title": "Lead Actor Scandal", "desc": "The lead actor of your Blockbuster is trending. Calls for boycott are growing.\n\nRoll for impact.", "outcomes": { "low": {"range": [2, 6], "effect": "boycott", "val": 0.65, "msg": "Boycott effective. Blockbuster Rev -35%."}, "mid": {"range": [7, 9], "effect": "none", "val": 1.0, "msg": "News cycle shifts. No impact."}, "high": {"range": [10, 12], "effect": "hype", "val": 1.10, "msg": "No press is bad press. Revenue +10%."} } },
+                { "id": "projector_fail", "title": "Projector Failure", "desc": "Screen 1's bulb blew out. Spare parts are delayed.\n\nRoll for repair.", "outcomes": { "low": {"range": [2, 5], "effect": "broken", "val": 0.80, "msg": "Repair failed. Total Capacity -20%."}, "mid": {"range": [6, 9], "effect": "fixed", "val": 1.0, "msg": "Quick fix worked. Full capacity."}, "high": {"range": [10, 12], "effect": "fixed", "val": 1.0, "msg": "Spare parts found! Full capacity."} } },
+                { "id": "indie_award", "title": "Festival Winner", "desc": "Your Indie film just won a major award.\n\nRoll for audience reaction.", "outcomes": { "low": {"range": [2, 5], "effect": "flop", "val": 1.0, "msg": "Too artsy for general public. No change."}, "mid": {"range": [6, 9], "effect": "cult", "val": 1.4, "msg": "Hype train! Indie Occupancy +40%."}, "high": {"range": [10, 12], "effect": "cult", "val": 1.5, "msg": "MEGA HIT! Indie Occupancy +50%."} } }
+            ],
+            titles: { "Blockbuster": "The Mind Flayer", "Mid": "Starcourt Mall", "Indie": "D&D Campaign", "Regional": "Hawkins Lab" },
+            prices: {"Blockbuster": 250, "Mid": 200, "Indie": 150, "Regional": 150}
+        };
+
+        const chapters = ["Chapter 1", "Chapter 2", "Chapter 3"];
+        const slots = ["Morning", "Afternoon", "Evening", "Night"];
+        const cats = ["Blockbuster", "Mid", "Indie", "Regional"];
+
+        let curChapIdx = -1; let curSlot = "Morning";
+        let allocations = {}; let pricingState = {}; 
+        let modifiers = { "Capacity": 1.0, "Blockbuster": 1.0, "Indie": 1.0 };
+        let warningActive = false; let inUpsideDown = false;
+        let totalRev = 0; let chapRev = 0;
+        let warningsCount = 0; let udEntryCount = 0;
+        let recoveryBoost = 1.0; let weekendIndieFail = false;
+
+        chapters.forEach(c => {
+            allocations[c] = {}; pricingState[c] = {};
+            slots.forEach(s => {
+                allocations[c][s] = { "Blockbuster":0, "Mid":0, "Indie":0, "Regional":0 };
+                pricingState[c][s] = { "Blockbuster":"Std", "Mid":"Std", "Indie":"Std", "Regional":"Std" };
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('next-chap-btn').addEventListener('click', handleChapterBtn);
+            audioSys.init(); 
+        });
+
+        function log(msg, type="sys") {
+            const el = document.getElementById('log'); const div = document.createElement('div');
+            div.innerText = "> " + msg; div.className = (type === "alert") ? "log-alert" : "log-sys";
+            el.appendChild(div); el.scrollTop = el.scrollHeight;
+        }
+
+        function handleChapterBtn() {
+            if(curChapIdx === -1) {
+                document.getElementById('tutorial-modal').style.display = 'flex';
+            } else {
+                triggerCrisis(curChapIdx + 1);
+            }
+        }
+
+        function startChapterLogic() {
+            if(curChapIdx >= 2) { finishGame(); return; }
+            
+            totalRev += chapRev; chapRev = 0; curChapIdx++;
+            
+            gameActive = true;
+            document.getElementById('movie-list').classList.remove('locked-controls');
+
+            chapters.forEach((c, i) => {
+                const el = document.getElementById("ch-"+(i+1));
+                el.classList.remove("active", "done");
+                if(i < curChapIdx) el.classList.add("done");
+                if(i == curChapIdx) el.classList.add("active");
+            });
+
+            document.getElementById('next-chap-btn').innerText = (curChapIdx==2) ? "FINISH CAMPAIGN" : "NEXT CHAPTER";
+            updateView(); 
+            log(`ENTERING ${chapters[curChapIdx]}...`);
+        }
+
+        let activeCrisis = null;
+        function triggerCrisis(idx) {
+            if (idx > 2) { finishGame(); return; }
+            
+            gameActive = false;
+            document.getElementById('movie-list').classList.add('locked-controls');
+
+            activeCrisis = config.crisis[idx];
+            document.getElementById('crisis-title').innerText = activeCrisis.title;
+            document.getElementById('crisis-desc').innerText = activeCrisis.desc;
+            
+            document.getElementById('dice-display').innerText = "?";
+            document.getElementById('roll-btn').style.display = "block";
+            document.getElementById('crisis-ok-btn').style.display = "none";
+            
+            document.getElementById('crisis-modal').style.display = 'flex';
+        }
+
+        function rollDice() {
+            const display = document.getElementById('dice-display');
+            const rollBtn = document.getElementById('roll-btn');
+            const okBtn = document.getElementById('crisis-ok-btn');
+            
+            rollBtn.disabled = true;
+            
+            let rolls = 0;
+            const interval = setInterval(() => {
+                display.innerText = Math.floor(Math.random() * 11) + 2;
+                rolls++;
+                if (rolls > 15) {
+                    clearInterval(interval);
+                    finalizeRoll();
+                }
+            }, 80);
+
+            function finalizeRoll() {
+                const val = Math.floor(Math.random() * 11) + 2; 
+                display.innerText = val;
+                
+                const out = activeCrisis.outcomes;
+                let res = null;
+                if(val <= 6) res = out.low; else if(val <= 9) res = out.mid; else res = out.high; 
+
+                if(res.effect == "broken") modifiers["Capacity"] = 0.8;
+                if(res.effect == "fixed") modifiers["Capacity"] = 1.0;
+                if(res.effect == "boycott") modifiers["Blockbuster"] = 0.65;
+                if(res.effect == "hype") modifiers["Blockbuster"] = 1.10;
+                if(res.effect == "cult") modifiers["Indie"] = res.val; 
+                
+                log(`CRISIS ROLL: ${val} - ${res.msg}`, val > 9 ? "good" : (val < 6 ? "alert" : "sys"));
+                
+                rollBtn.style.display = "none";
+                okBtn.style.display = "block";
+                rollBtn.disabled = false;
+            }
+        }
+
+        function setSlot(s) { curSlot = s; updateView(); }
+
+        function updateView() {
+            const activeChap = curChapIdx === -1 ? chapters[0] : chapters[curChapIdx];
+            const data = allocations[activeChap][curSlot];
+            const prices = pricingState[activeChap][curSlot]; 
+            const used = cats.reduce((s,c) => s + data[c], 0);
+
+            document.getElementById('screens').innerText = 5 - used;
+            slots.forEach(s => {
+                const b = document.getElementById('btn-'+s);
+                if(s==curSlot) b.classList.add('active'); else b.classList.remove('active');
+            });
+
+            const list = document.getElementById('movie-list');
+            list.innerHTML = cats.map(c => {
+                let pVal = prices[c]; let pClass = "price-std";
+                if(pVal === "Low") pClass = "price-low";
+                if(pVal === "High") pClass = "price-high";
+
+                return `
+                    <div class="row ${data[c]>0?'active':''}">
+                        <div><div style="font-weight:bold; color:#fff;">${config.titles[c]}</div><small>${c}</small></div>
+                        <div class="qty">
+                            <div class="price-badge ${pClass}" onclick="cyclePrice('${c}')">${pVal.toUpperCase()}</div>
+                            <button class="q-btn" onclick="modAlloc('${c}', -1)" ${data[c]<=0?'disabled':''}>-</button>
+                            <b>${data[c]}</b>
+                            <button class="q-btn" onclick="modAlloc('${c}', 1)" ${used>=5?'disabled':''}>+</button>
+                        </div>
+                    </div>`;
+            }).join('');
+            
+            if(curChapIdx !== -1) calcMetrics();
+        }
+
+        function cyclePrice(c) {
+            if (!gameActive) return; 
+            const activeChap = curChapIdx === -1 ? chapters[0] : chapters[curChapIdx];
+            const current = pricingState[activeChap][curSlot][c];
+            let next = "Std";
+            if(current === "Std") next = "High";
+            else if(current === "High") next = "Low";
+            else if(current === "Low") next = "Std";
+            
+            pricingState[activeChap][curSlot][c] = next;
+            updateView();
+        }
+
+        function modAlloc(c, d) {
+            if (!gameActive) return; 
+            if(inUpsideDown) { alert("THE GATE IS OPEN! SEAL IT FIRST!"); return; }
+            recoveryBoost = 1.0; 
+            const activeChap = curChapIdx === -1 ? chapters[0] : chapters[curChapIdx];
+            
+            const used = cats.reduce((s,cat) => s + allocations[activeChap][curSlot][cat], 0);
+            if(d > 0 && used >= 5) return;
+            if(d < 0 && allocations[activeChap][curSlot][c] <= 0) return;
+            allocations[activeChap][curSlot][c] += d;
+            updateView();
+        }
+
+        function calcMetrics() {
+            const chap = chapters[curChapIdx];
+            let cRev = 0; let cSeats = 0; let cFilled = 0; let indieCount = 0;
+
+            slots.forEach(s => {
+                cats.forEach(c => {
+                    const count = allocations[chap][s][c] || 0;
+                    if(count > 0) {
+                        if(c == "Indie") indieCount += count;
+                        let baseOcc = config.occupancy[chap][s][c] || 0.5;
+                        let satFactor = 0;
+                        for(let i=0; i<count; i++) {
+                            let idx = Math.min(i, config.saturation[c].length - 1);
+                            satFactor += config.saturation[c][idx];
+                        }
+                        satFactor = satFactor / count;
+
+                        let priceChoice = pricingState[chap][s][c];
+                        let priceMult = 1.0; let occMult = 1.0;
+
+                        if(priceChoice === "Low") {
+                            priceMult = 0.75;
+                            if(c === "Blockbuster" && s === "Morning") occMult = 1.5;
+                            else if(c === "Indie" && s === "Evening") occMult = 1.4;
+                            else occMult = 1.2;
+                        } else if(priceChoice === "High") {
+                            priceMult = 1.3;
+                            if(c === "Blockbuster" && s === "Night") occMult = 1.0; 
+                            else occMult = 0.8;
+                        }
+
+                        let crisisMod = modifiers[c] || 1.0; let capMod = modifiers["Capacity"] || 1.0;
+                        let occ = baseOcc * satFactor * crisisMod * capMod * occMult * recoveryBoost;
+                        if(occ > 1.0) occ = 1.0;
+
+                        const cap = 200; const basePrice = config.prices[c];
+                        const rev = count * cap * (basePrice * priceMult) * occ;
+
+                        cRev += rev; cSeats += (count * cap); cFilled += (count * cap * occ);
+                    }
+                });
+            });
+
+            weekendIndieFail = (chap == "Chapter 3" && indieCount == 0 && cSeats > 0);
+            chapRev = cRev;
+            let occPct = cSeats > 0 ? (cFilled / cSeats) : 0;
+            
+            if(recoveryBoost > 1.0 && occPct < 0.45 && cSeats > 0) { occPct = 0.45; }
+
+            document.getElementById('rev').innerText = "₹" + Math.round(cRev).toLocaleString();
+            document.getElementById('occ').innerText = Math.round(occPct*100) + "%";
+            
+            const bar = document.getElementById('occ-bar');
+            bar.style.width = Math.round(occPct*100) + "%";
+            bar.style.background = occPct < 0.4 ? "var(--neon-red)" : "#4caf50";
+
+            checkGates(occPct, cSeats);
+        }
+
+        function checkGates(occ, totalSeats) {
+            if(totalSeats < 1000) return; 
+            const gateWarn = document.getElementById('gate-warn');
+
+            if(occ < 0.45 && occ >= 0.40) {
+                if(!warningActive) {
+                    log("NANCY: 'Readings dropping. Be careful.'", "alert");
+                    gateWarn.style.display = 'block'; warningActive = true; warningsCount++; recoveryBoost = 1.0;
+                    audioSys.triggerWarning(); 
+                }
+            } else if (occ < 0.40 && !inUpsideDown) {
+                inUpsideDown = true; udEntryCount++; recoveryBoost = 1.0; 
+                log("HOPPER: 'WE LOST THE SIGNAL! BREACH!'", "alert");
+                gateWarn.style.display = 'none';
+                
+                document.getElementById('gate-transition').style.display = 'flex';
+                audioSys.triggerBreach();
+
+                setTimeout(() => {
+                    document.getElementById('gate-transition').style.display = 'none';
+                    document.body.classList.add('upside-down');
+                    document.getElementById('minigame-container').style.display = 'block';
+                }, 2500); 
+            } else if (occ >= 0.45) {
+                if(warningActive) {
+                    gateWarn.style.display = 'none'; warningActive = false;
+                    if (audioSys.warn.volume > 0) audioSys.fadeOut(audioSys.warn);
+                }
+            }
+        }
+
+        // --- NATIVE MINI-GAME LOGIC & VALIDATION ---
+        function attemptSeal() {
+            const steveA = document.getElementById('steve-a').value;
+            const steveB = document.getElementById('steve-b').value;
+            const hopperA = document.getElementById('hopper-a').value;
+            const hopperB = document.getElementById('hopper-b').value;
+            const nancyA = document.getElementById('nancy-a').value;
+            const nancyB = document.getElementById('nancy-b').value;
+            const carrier = document.getElementById('carrier').value;
+
+            if (carrier === "-- Select --") {
+                showMiniError("You must assign the Flamethrower to an operative!");
+                return;
+            }
+
+            // Check for Duplicate Zone Assignments
+            const allSelections = [steveA, steveB, hopperA, hopperB, nancyA, nancyB].filter(z => z !== "None" && z !== "-- Select --");
+            const uniqueSelections = new Set(allSelections);
+
+            if (allSelections.length !== uniqueSelections.size) {
+                showMiniError("VECNA STRIKES!<br><br>HINT: Two operatives cannot be in the same zone. Assign each zone uniquely!");
+                return;
+            }
+
+            // Check for Missing Zones
+            const requiredZones = ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"];
+            const missing = requiredZones.filter(z => !allSelections.includes(z));
+
+            if (missing.length > 0) {
+                showMiniError("VECNA STRIKES!<br><br>HINT: You left " + missing.join(", ") + " completely unprotected! All zones must be covered.");
+                return;
+            }
+
+            // Check Flamethrower Logic
+            const ops = { "Steve": [steveA, steveB], "Hopper": [hopperA, hopperB], "Nancy": [nancyA, nancyB] };
+            const carrierZones = ops[carrier];
+
+            const inZone5 = carrierZones.includes("Zone 5");
+            const hasOtherZone = carrierZones.some(z => z !== "Zone 5" && z !== "None" && z !== "-- Select --");
+
+            if (!inZone5 || hasOtherZone) {
+                showMiniError("VECNA STRIKES!<br><br>HINT: The Flamethrower is too heavy. The carrier must be in The Hub (Zone 5) and CANNOT cover any other zones.");
+                return;
+            }
+
+            // If optimal solution reached, seal the gate
+            sealTheGate();
+        }
+
+        function showMiniError(msg) {
+            const errDiv = document.getElementById('mini-error');
+            errDiv.innerHTML = msg;
+            errDiv.style.display = 'block';
+            setTimeout(() => { errDiv.style.display = 'none'; }, 6000);
+        }
+
+        function sealTheGate() {
+            const btn = document.getElementById('seal-btn');
+            btn.innerText = "⚡ VECNA DEFEATED ⚡";
+            btn.style.background = "#fff";
+            btn.style.color = "#000";
+            
+            document.body.classList.add('sealing-sequence');
+            
+            setTimeout(() => {
+                document.getElementById('minigame-container').style.display = 'none';
+                document.body.classList.remove('upside-down');
+                
+                log("STEVE: 'That was close. Gate sealed.'", "sys");
+                
+                inUpsideDown = false; warningActive = false; recoveryBoost = 1.35; 
+                
+                // --- TIME SKIP: ADVANCE TO NEXT CHAPTER BUGFIX ---
+                log(`Time lost to the Upside Down. The current chapter is over.`, "alert");
+                
+                totalRev += chapRev; 
+                chapRev = 0;
+                
+                audioSys.triggerSafe(); 
+
+                if (curChapIdx < 2) {
+                    curSlot = "Morning";
+                    // Do NOT increment curChapIdx here! This prevents the double skip bug.
+                    // The triggerCrisis function leads to startChapterLogic, which increments it safely.
+                    setTimeout(() => { triggerCrisis(curChapIdx + 1); }, 1000);
+                } else {
+                    // They survived a breach in Chapter 3, skip to Scorecard
+                    setTimeout(() => { finishGame(); }, 1500);
+                }
+
+                // Reset button UI
+                btn.innerText = "⚡ EXECUTE STRATEGY ⚡";
+                btn.style.background = "transparent";
+                btn.style.color = "#fff";
+                
+                // RESET MINIGAME CHOICES FOR REPLAY
+                document.querySelectorAll('.arcade-select').forEach(sel => sel.selectedIndex = 0);
+
+                setTimeout(() => { document.body.classList.remove('sealing-sequence'); }, 1000);
+            }, 1800);
+        }
+
+        function finishGame() {
+            totalRev += chapRev; const modal = document.getElementById('end-modal');
+            const stats = document.getElementById('end-stats');
+            audioSys.stopAll(); 
+
+            let grade = "C";
+            if(totalRev > 5000000) grade = "B"; if(totalRev > 7000000) grade = "A";
+            if(udEntryCount > 0) grade = "D (Corrupted)"; if(weekendIndieFail) grade = "C- (Community Anger)";
+
+            let feedback = "";
+            if(warningsCount > 2) feedback += "<br>- Nancy: You played too risky with niche films.";
+            if(udEntryCount > 0) feedback += "<br>- Hopper: I can't keep cleaning up these breaches.";
+            if(weekendIndieFail) feedback += "<br>- Dustin: The D&D club is mad you ignored Indies on the weekend.";
+            if(totalRev > 6000000) feedback += "<br>- Steve: Sales were awesome, Henderson.";
+
+            stats.innerHTML = `<strong>FINAL GRADE: ${grade}</strong><br>TOTAL REVENUE: ₹${Math.round(totalRev).toLocaleString()}<br>UPSIDE DOWN BREACHES: ${udEntryCount}<br>CLOSE CALLS: ${warningsCount}<br><hr style="border:1px solid #444"><strong>NOTES:</strong>${feedback}`;
+            modal.style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
