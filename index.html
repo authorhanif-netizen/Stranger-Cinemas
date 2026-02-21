@@ -52,12 +52,18 @@
             100% { transform: translateY(-100px) translateX(50px); opacity:0; } 
         }
 
-        /* Cinematic Gate Transition Overlay */
+        /* Cinematic Gate Transition Overlay - FIXED FOR MOBILE SCROLLING */
         #gate-transition {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 900; justify-content: center; align-items: center; flex-direction: column;
+            background: #000; z-index: 900; flex-direction: column;
             text-align: center; padding: 20px; box-sizing: border-box;
+            overflow-y: auto; /* Allows scrolling on small screens */
         }
+        .gate-content-wrapper {
+            margin: auto; width: 100%; max-width: 650px; 
+            padding-top: 40px; padding-bottom: 60px; /* Extra bottom padding */
+        }
+
         .gate-text {
             color: var(--neon-red); font-family: 'ITC Benguiat', serif; font-size: 3.5rem;
             text-shadow: 0 0 20px var(--neon-red); animation: pulseAlert 0.5s infinite; margin-bottom: 20px;
@@ -215,7 +221,7 @@
         
         .vecna-btn {
             display: inline-block; background: transparent; color: #fff; 
-            border: 2px solid var(--neon-red); padding: 15px 30px;
+            border: 2px solid var(--neon-red); padding: 20px 40px;
             font-family: 'ITC Benguiat', serif; font-size: 1.2rem; cursor: pointer;
             box-shadow: 0 0 15px rgba(211,47,47,0.3); transition: all 0.3s; margin-top: 20px;
         }
@@ -292,7 +298,9 @@
             .dropdowns { flex-direction: column; width: 100%; gap: 10px; }
             .arcade-select { width: 100%; font-size: 1.1rem; padding: 12px; }
             .execute-btn { font-size: 1.2rem; padding: 15px; margin-top: 20px; }
-            .vecna-btn { font-size: 1rem; padding: 15px; width: 100%; box-sizing: border-box;}
+            
+            /* Ensures button is readable and clickable on mobile */
+            .vecna-btn { font-size: 1.1rem; padding: 15px; width: 100%; box-sizing: border-box;}
             
             .gate-text { font-size: 2rem; }
             .chap { font-size: 0.65rem; }
@@ -317,19 +325,21 @@
     </div>
 
     <div id="gate-transition">
-        <h1 class="gate-text">THE GATES ARE OPENING...</h1>
-        <div style="max-width: 650px; background: rgba(10,10,10,0.9); border: 2px solid var(--neon-red); padding: 30px; text-align: left; font-family: 'Courier New', monospace; box-shadow: 0 0 30px rgba(211,47,47,0.4);">
-            <p style="color: var(--neon-red); font-weight: bold; text-align: center; font-size: 1.2rem;">// INITIATING UPSIDE DOWN PROTOCOL //</p>
-            <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">We lost the signal. The town is in danger. Hopper, Steve, and Nancy are crossing over to contain the breach. You must guide them from the terminal.</p>
-            <ul style="color: #ccc; padding-left: 20px; line-height: 1.8;">
-                <li><strong style="color:var(--neon-cyan)">NO OVERLAP:</strong> Operatives cannot cover the same zone. Assign the 5 zones uniquely.</li>
-                <li><strong style="color:var(--neon-gold)">THE HUB:</strong> Zone 5 is the core. The operative assigned here <strong>must</strong> carry the Flamethrower.</li>
-                <li><strong style="color:var(--neon-gold)">HEAVY GEAR:</strong> Whoever carries the Flamethrower can <strong>ONLY</strong> cover Zone 5. Assign 'None' to their second slot.</li>
-                <li><strong style="color:var(--neon-cyan)">VECTOR:</strong> The Hive Mind connects from the sky. Set gravity assist to Top Down.</li>
-            </ul>
-            <div style="text-align: center; margin-top: 30px;">
-                <p id="connection-status" style="color: var(--neon-green); font-weight: bold; margin-bottom: 15px;">CONNECTION ESTABLISHING...</p>
-                <button id="vecna-btn" class="vecna-btn" style="display: none;" onclick="enterUpsideDown()">ARE YOU READY TO FACE VECNA?</button>
+        <div class="gate-content-wrapper">
+            <h1 class="gate-text">THE GATES ARE OPENING...</h1>
+            <div style="background: rgba(10,10,10,0.9); border: 2px solid var(--neon-red); padding: 25px; text-align: left; font-family: 'Courier New', monospace; box-shadow: 0 0 30px rgba(211,47,47,0.4); box-sizing: border-box;">
+                <p style="color: var(--neon-red); font-weight: bold; text-align: center; font-size: 1.2rem; margin-top: 0;">// INITIATING UPSIDE DOWN PROTOCOL //</p>
+                <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">We lost the signal. The town is in danger. Hopper, Steve, and Nancy are crossing over to contain the breach. You must guide them from the terminal.</p>
+                <ul style="color: #ccc; padding-left: 20px; line-height: 1.8;">
+                    <li><strong style="color:var(--neon-cyan)">NO OVERLAP:</strong> Operatives cannot cover the same zone. Assign the 5 zones uniquely.</li>
+                    <li><strong style="color:var(--neon-gold)">THE HUB:</strong> Zone 5 is the core. The operative assigned here <strong>must</strong> carry the Flamethrower.</li>
+                    <li><strong style="color:var(--neon-gold)">HEAVY GEAR:</strong> Whoever carries the Flamethrower can <strong>ONLY</strong> cover Zone 5. Assign 'None' to their second slot.</li>
+                    <li><strong style="color:var(--neon-cyan)">VECTOR:</strong> The Hive Mind connects from the sky. Set gravity assist to Top Down.</li>
+                </ul>
+                <div style="text-align: center; margin-top: 40px; padding-bottom: 20px;">
+                    <p id="connection-status" style="color: var(--neon-green); font-weight: bold; margin-bottom: 20px;">CONNECTION ESTABLISHING...</p>
+                    <button id="vecna-btn" class="vecna-btn" style="display: none;" onclick="enterUpsideDown()">ARE YOU READY TO FACE VECNA?</button>
+                </div>
             </div>
         </div>
     </div>
