@@ -980,11 +980,12 @@
                 document.getElementById('gate-transition').style.display = 'flex';
                 audioSys.triggerBreach();
 
+                // CHANGED: Wait 20 seconds for the user to read instructions
                 setTimeout(() => {
                     document.getElementById('gate-transition').style.display = 'none';
                     document.body.classList.add('upside-down');
                     document.getElementById('minigame-container').style.display = 'block';
-                }, 8000); // Wait 8 seconds so the player can read the instructions
+                }, 20000); 
             } else if (occ >= 0.45) {
                 if(warningActive) {
                     gateWarn.style.display = 'none'; warningActive = false;
@@ -1080,7 +1081,7 @@
                 // RESET MINIGAME CHOICES FOR REPLAY AND UNLOCK
                 document.querySelectorAll('.arcade-select').forEach(sel => {
                     sel.selectedIndex = 0;
-                    Array.from(sel.options).forEach(opt => option.disabled = false);
+                    Array.from(sel.options).forEach(opt => opt.disabled = false);
                 });
 
                 setTimeout(() => { document.body.classList.remove('sealing-sequence'); }, 1000);
