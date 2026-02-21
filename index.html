@@ -56,10 +56,10 @@
         #gate-transition {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 900; justify-content: center; align-items: center; flex-direction: column;
-            text-align: center;
+            text-align: center; padding: 20px; box-sizing: border-box;
         }
         .gate-text {
-            color: var(--neon-red); font-family: 'ITC Benguiat', serif; font-size: 4rem;
+            color: var(--neon-red); font-family: 'ITC Benguiat', serif; font-size: 3.5rem;
             text-shadow: 0 0 20px var(--neon-red); animation: pulseAlert 0.5s infinite; margin-bottom: 20px;
         }
         @keyframes pulseAlert { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
@@ -201,6 +201,7 @@
             font-family: 'Roboto Mono', monospace; min-width: 120px; outline: none; cursor: pointer;
         }
         .arcade-select:focus { border-color: var(--neon-cyan); color: #fff; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
+        .arcade-select:disabled { color: #555; background: #111; cursor: not-allowed; }
         .gold .arcade-select:focus { border-color: var(--neon-gold); box-shadow: 0 0 8px rgba(255,215,0,0.3);}
         
         .execute-btn {
@@ -247,60 +248,33 @@
                 padding-bottom: 40px; 
             }
             
-            /* Give space at the top so tools don't overlap the title */
             h1 { font-size: 1.5rem; margin-top: 55px; line-height: 1.3; }
             
-            /* Stack the main game panels vertically */
-            .grid {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-                gap: 15px;
-            }
-            
+            .grid { display: flex; flex-direction: column; height: auto; gap: 15px; }
             .panel { height: auto; min-height: unset; padding: 15px; margin-bottom: 10px; }
             
-            /* Fix the movie allocation rows so they don't squish */
-            .row {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 10px;
-            }
+            .row { flex-direction: column; align-items: flex-start; gap: 10px; }
             .qty {
-                width: 100%;
-                justify-content: flex-start;
-                background: rgba(255,255,255,0.05);
-                padding: 10px;
-                border-radius: 4px;
-                box-sizing: border-box;
-                gap: 15px;
+                width: 100%; justify-content: flex-start; background: rgba(255,255,255,0.05);
+                padding: 10px; border-radius: 4px; box-sizing: border-box; gap: 15px;
             }
             
-            /* Make buttons easier to tap on phones */
             .q-btn { width: 40px; height: 40px; font-size: 1.5rem; }
             .price-badge { padding: 8px 12px; font-size: 0.8rem; flex-grow: 1; text-align: center; }
 
-            /* Fix Start Screen */
             .intro-box { padding: 20px; max-width: 95%; box-sizing: border-box; }
             .intro-title { font-size: 1.8rem; }
             
-            /* Reposition Game Tools */
             #game-tools { top: 10px; right: 10px; gap: 5px; flex-direction: row; }
             .lore-btn { font-size: 0.7rem; padding: 8px 10px; }
             
-            /* Fix Modals to fit phone screen */
             .modal, .notebook { 
-                width: 95% !important; 
-                padding: 20px !important; 
-                min-height: auto !important;
-                max-height: 85vh; /* Allows scrolling inside the modal */
-                overflow-y: auto;
-                box-sizing: border-box;
+                width: 95% !important; padding: 20px !important; min-height: auto !important;
+                max-height: 85vh; overflow-y: auto; box-sizing: border-box;
             }
             .notebook h3 { font-size: 1.2rem; }
             #diary-content { font-size: 0.85rem; }
             
-            /* Minigame Overhaul for Mobile */
             .arcade-title { font-size: 2.2rem; }
             .zone-grid { gap: 10px; }
             .zone-box { width: 45%; height: auto; padding: 10px 0; }
@@ -311,8 +285,7 @@
             .arcade-select { width: 100%; font-size: 1.1rem; padding: 12px; }
             .execute-btn { font-size: 1.2rem; padding: 15px; margin-top: 20px; }
             
-            .gate-text { font-size: 2.5rem; }
-            
+            .gate-text { font-size: 2rem; }
             .chap { font-size: 0.65rem; }
             .slot-btn { font-size: 0.75rem; padding: 10px 2px; }
             #dice-container .dice-result { font-size: 3rem; }
@@ -336,7 +309,17 @@
 
     <div id="gate-transition">
         <h1 class="gate-text">THE GATES ARE OPENING...</h1>
-        <p style="color:#fff; font-family: 'Courier New'; letter-spacing: 2px;">PREPARE FOR INCURSION</p>
+        <div style="max-width: 650px; background: rgba(10,10,10,0.9); border: 2px solid var(--neon-red); padding: 30px; text-align: left; font-family: 'Courier New', monospace; box-shadow: 0 0 30px rgba(211,47,47,0.4);">
+            <p style="color: var(--neon-red); font-weight: bold; text-align: center; font-size: 1.2rem;">// INITIATING UPSIDE DOWN PROTOCOL //</p>
+            <p style="color: #ccc; line-height: 1.6; margin-bottom: 20px;">We lost the signal. The town is in danger. Hopper, Steve, and Nancy are crossing over to contain the breach. You must guide them from the terminal.</p>
+            <ul style="color: #ccc; padding-left: 20px; line-height: 1.8;">
+                <li><strong style="color:var(--neon-cyan)">5 ZONES</strong> are breached. You must assign our operatives to cover them all.</li>
+                <li><strong style="color:var(--neon-cyan)">NO OVERLAP:</strong> Operatives cannot cover the same zone. Assign zones uniquely.</li>
+                <li><strong style="color:var(--neon-gold)">THE HUB:</strong> Zone 5 is the core. The operative assigned here <strong>must</strong> carry the Flamethrower.</li>
+                <li><strong style="color:var(--neon-gold)">HEAVY GEAR:</strong> The Flamethrower is too heavy. Whoever carries it can <strong>ONLY</strong> cover Zone 5 and no other zones.</li>
+            </ul>
+            <p style="text-align: center; color: var(--neon-green); margin-top: 30px; font-weight: bold; animation: blink 1s infinite;">CONNECTION ESTABLISHING...</p>
+        </div>
     </div>
 
     <div id="minigame-container">
@@ -366,11 +349,25 @@
                 <div class="dropdowns">
                     <div class="drop-group">
                         <label>Zone A</label>
-                        <select id="steve-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="steve-a" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                     <div class="drop-group">
                         <label>Zone B</label>
-                        <select id="steve-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="steve-b" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -379,11 +376,25 @@
                 <div class="dropdowns">
                     <div class="drop-group">
                         <label>Zone A</label>
-                        <select id="hopper-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="hopper-a" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                     <div class="drop-group">
                         <label>Zone B</label>
-                        <select id="hopper-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="hopper-b" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -392,11 +403,25 @@
                 <div class="dropdowns">
                     <div class="drop-group">
                         <label>Zone A</label>
-                        <select id="nancy-a" class="arcade-select"><option>-- Select --</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="nancy-a" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                     <div class="drop-group">
                         <label>Zone B</label>
-                        <select id="nancy-b" class="arcade-select"><option>None</option><option>Zone 1</option><option>Zone 2</option><option>Zone 3</option><option>Zone 4</option><option>Zone 5</option></select>
+                        <select id="nancy-b" class="arcade-select zone-select">
+                            <option value="None">None</option>
+                            <option value="Zone 1">Zone 1</option>
+                            <option value="Zone 2">Zone 2</option>
+                            <option value="Zone 3">Zone 3</option>
+                            <option value="Zone 4">Zone 4</option>
+                            <option value="Zone 5">Zone 5</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -408,7 +433,12 @@
                 <div class="dropdowns">
                     <div class="drop-group">
                         <label>Carrier</label>
-                        <select id="carrier" class="arcade-select"><option>-- Select --</option><option>Steve</option><option>Hopper</option><option>Nancy</option></select>
+                        <select id="carrier" class="arcade-select">
+                            <option value="None">-- Select --</option>
+                            <option value="Steve">Steve</option>
+                            <option value="Hopper">Hopper</option>
+                            <option value="Nancy">Nancy</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -689,7 +719,37 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('next-chap-btn').addEventListener('click', handleChapterBtn);
             audioSys.init(); 
+            initDropdownLocks();
         });
+
+        // --- DYNAMIC DROPDOWN LOCKING LOGIC ---
+        function initDropdownLocks() {
+            const zoneSelects = document.querySelectorAll('.zone-select');
+            
+            function updateDropdownLocks() {
+                // Get all selected values that are not "None"
+                const selectedZones = Array.from(zoneSelects)
+                    .map(sel => sel.value)
+                    .filter(val => val !== "None");
+                
+                // Loop through every dropdown and lock options chosen elsewhere
+                zoneSelects.forEach(select => {
+                    Array.from(select.options).forEach(option => {
+                        if (option.value === "None") {
+                            option.disabled = false;
+                        } else if (selectedZones.includes(option.value) && select.value !== option.value) {
+                            option.disabled = true;
+                        } else {
+                            option.disabled = false;
+                        }
+                    });
+                });
+            }
+
+            // Attach event listener to all zone dropdowns
+            zoneSelects.forEach(sel => sel.addEventListener('change', updateDropdownLocks));
+        }
+
 
         function log(msg, type="sys") {
             const el = document.getElementById('log'); const div = document.createElement('div');
@@ -924,7 +984,7 @@
                     document.getElementById('gate-transition').style.display = 'none';
                     document.body.classList.add('upside-down');
                     document.getElementById('minigame-container').style.display = 'block';
-                }, 2500); 
+                }, 8000); // Wait 8 seconds so the player can read the instructions
             } else if (occ >= 0.45) {
                 if(warningActive) {
                     gateWarn.style.display = 'none'; warningActive = false;
@@ -943,21 +1003,13 @@
             const nancyB = document.getElementById('nancy-b').value;
             const carrier = document.getElementById('carrier').value;
 
-            if (carrier === "-- Select --") {
+            if (carrier === "None" || carrier === "-- Select --") {
                 showMiniError("You must assign the Flamethrower to an operative!");
                 return;
             }
 
-            // Check for Duplicate Zone Assignments
-            const allSelections = [steveA, steveB, hopperA, hopperB, nancyA, nancyB].filter(z => z !== "None" && z !== "-- Select --");
-            const uniqueSelections = new Set(allSelections);
-
-            if (allSelections.length !== uniqueSelections.size) {
-                showMiniError("VECNA STRIKES!<br><br>HINT: Two operatives cannot be in the same zone. Assign each zone uniquely!");
-                return;
-            }
-
-            // Check for Missing Zones
+            // Check for Missing Zones (Must contain Zone 1, 2, 3, 4, and 5)
+            const allSelections = [steveA, steveB, hopperA, hopperB, nancyA, nancyB].filter(z => z !== "None");
             const requiredZones = ["Zone 1", "Zone 2", "Zone 3", "Zone 4", "Zone 5"];
             const missing = requiredZones.filter(z => !allSelections.includes(z));
 
@@ -971,10 +1023,10 @@
             const carrierZones = ops[carrier];
 
             const inZone5 = carrierZones.includes("Zone 5");
-            const hasOtherZone = carrierZones.some(z => z !== "Zone 5" && z !== "None" && z !== "-- Select --");
+            const hasOtherZone = carrierZones.some(z => z !== "Zone 5" && z !== "None");
 
             if (!inZone5 || hasOtherZone) {
-                showMiniError("VECNA STRIKES!<br><br>HINT: The Flamethrower is too heavy. The carrier must be in The Hub (Zone 5) and CANNOT cover any other zones.");
+                showMiniError("VECNA STRIKES!<br><br>HINT: The Flamethrower is too heavy. The carrier must be in The Hub (Zone 5) and CANNOT cover any other zones. Assign 'None' to their other slot.");
                 return;
             }
 
@@ -1005,6 +1057,7 @@
                 
                 inUpsideDown = false; warningActive = false; recoveryBoost = 1.35; 
                 
+                // --- TIME SKIP: ADVANCE TO NEXT CHAPTER BUGFIX ---
                 log(`Time lost to the Upside Down. The current chapter is over.`, "alert");
                 
                 totalRev += chapRev; 
@@ -1014,10 +1067,8 @@
 
                 if (curChapIdx < 2) {
                     curSlot = "Morning";
-                    // Move to next chapter's crisis safely without double-skipping
                     setTimeout(() => { triggerCrisis(curChapIdx + 1); }, 1000);
                 } else {
-                    // They survived a breach in Chapter 3, skip to Scorecard
                     setTimeout(() => { finishGame(); }, 1500);
                 }
 
@@ -1026,8 +1077,11 @@
                 btn.style.background = "transparent";
                 btn.style.color = "#fff";
                 
-                // RESET MINIGAME CHOICES FOR REPLAY
-                document.querySelectorAll('.arcade-select').forEach(sel => sel.selectedIndex = 0);
+                // RESET MINIGAME CHOICES FOR REPLAY AND UNLOCK
+                document.querySelectorAll('.arcade-select').forEach(sel => {
+                    sel.selectedIndex = 0;
+                    Array.from(sel.options).forEach(opt => option.disabled = false);
+                });
 
                 setTimeout(() => { document.body.classList.remove('sealing-sequence'); }, 1000);
             }, 1800);
