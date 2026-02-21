@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Stranger Cinemas: The Hawkins Saga</title>
     <link href="https://fonts.googleapis.com/css2?family=Benguiat&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -28,7 +28,7 @@
 
         /* --- VISUAL EFFECTS --- */
         body::before {
-            content: " "; display: block; position: absolute;
+            content: " "; display: block; position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             z-index: 50; background-size: 100% 2px, 3px 100%; pointer-events: none;
@@ -108,7 +108,7 @@
         .row.active { border-left-color: var(--neon-red); }
 
         .qty { display: flex; align-items: center; gap: 10px; }
-        .q-btn { width: 25px; height: 25px; background: #222; border: 1px solid #555; color: #fff; cursor: pointer; transition: 0.2s; }
+        .q-btn { width: 30px; height: 30px; background: #222; border: 1px solid #555; color: #fff; cursor: pointer; transition: 0.2s; font-size: 1.2rem; }
         .q-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .price-badge { background: #111; padding: 4px 8px; font-size: 0.7rem; font-weight: bold; border: 1px solid #444; border-radius: 4px; cursor: pointer; width: 50px; text-align: center; user-select: none; transition: all 0.2s; }
@@ -123,8 +123,8 @@
         .log-alert { color: var(--neon-red); }
         .log-sys { color: #4caf50; }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; align-items: center; }
-        .modal { background: #111; border: 2px solid var(--neon-red); padding: 40px; width: 500px; text-align: center; box-shadow: 0 0 50px var(--neon-red); max-height: 90vh; overflow-y: auto;}
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; display: flex; justify-content: center; align-items: center; overflow-y: auto;}
+        .modal { background: #111; border: 2px solid var(--neon-red); padding: 40px; width: 500px; max-width: 90%; text-align: center; box-shadow: 0 0 50px var(--neon-red); max-height: 90vh; overflow-y: auto; box-sizing: border-box;}
 
         /* DIARY NOTEBOOK PAGE TURNER STYLE */
         .notebook {
@@ -146,8 +146,8 @@
         .lore-btn { background: rgba(10, 10, 10, 0.8); color: var(--neon-red); border: 2px solid var(--neon-red); font-family: 'ITC Benguiat', serif; padding: 10px 15px; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px rgba(211, 47, 47, 0.4); transition: 0.3s; font-size: 1rem; }
         .lore-btn:hover { background: var(--neon-red); color: #000; text-shadow: none; box-shadow: 0 0 20px var(--neon-red); }
 
-        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; transition: opacity 0.5s; }
-        .intro-box { border: 4px double var(--neon-red); padding: 40px; max-width: 700px; background: rgba(10,10,10,0.95); box-shadow: 0 0 40px rgba(211,47,47,0.3); position: relative; }
+        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 200; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; transition: opacity 0.5s; box-sizing: border-box;}
+        .intro-box { border: 4px double var(--neon-red); padding: 40px; max-width: 90%; background: rgba(10,10,10,0.95); box-shadow: 0 0 40px rgba(211,47,47,0.3); position: relative; box-sizing: border-box;}
         .intro-title { font-family: 'ITC Benguiat', serif; font-size: 3rem; color: var(--neon-red); text-shadow: 0 0 10px var(--neon-glow); margin-bottom: 20px; letter-spacing: 2px; }
         
         #video-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 150; display: none; transition: opacity 0.5s; }
@@ -159,7 +159,7 @@
         /* --- NATIVE MINIGAME CSS --- */
         #minigame-container { 
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 800; 
-            background: #0d0707; padding: 40px 20px; overflow-y: auto;
+            background: #0d0707; padding: 40px 20px; overflow-y: auto; overflow-x: hidden;
             border: 10px solid #1b1b1b; box-sizing: border-box;
             background-image: radial-gradient(circle at center, rgba(255, 0, 51, 0.1) 0%, transparent 70%);
         }
@@ -197,7 +197,7 @@
         .drop-group { display: flex; flex-direction: column; }
         .drop-group label { font-size: 0.65rem; color: #777; text-transform: uppercase; margin-bottom: 5px; }
         .arcade-select { 
-            background: #000; color: #ccc; border: 1px solid #444; padding: 8px 10px; 
+            background: #000; color: #ccc; border: 1px solid #444; padding: 12px 10px; 
             font-family: 'Roboto Mono', monospace; min-width: 120px; outline: none; cursor: pointer;
         }
         .arcade-select:focus { border-color: var(--neon-cyan); color: #fff; box-shadow: 0 0 8px rgba(0,229,255,0.3); }
@@ -233,6 +233,56 @@
         .main-btn:hover { background: var(--neon-red); border-color: var(--neon-red); color: black; }
         
         .dice-result { font-size: 4rem; color: var(--neon-red); font-family: 'ITC Benguiat'; text-shadow: 0 0 20px var(--neon-red); margin: 20px 0; min-height: 80px; }
+
+        /* --- MOBILE RESPONSIVENESS MEDIA QUERIES --- */
+        @media (max-width: 850px) {
+            body {
+                overflow-y: auto; /* Enables scrolling for the main page */
+                height: auto;
+                min-height: 100vh;
+                padding-bottom: 80px; /* Space for buttons at the bottom */
+            }
+            .grid {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+            }
+            h1 { font-size: 1.8rem; margin-top: 60px; }
+            .panel { height: auto; min-height: 300px; margin-bottom: 20px; }
+            
+            /* Start Screen Mobile Adjustments */
+            .intro-box { padding: 20px; }
+            .intro-title { font-size: 1.8rem; }
+            .intro-text { font-size: 0.85rem; }
+            
+            /* Game Tools Menu */
+            #game-tools { top: 10px; right: 10px; flex-direction: column; gap: 5px; }
+            .lore-btn { font-size: 0.7rem; padding: 8px; }
+            
+            /* Modals Mobile Adjustments */
+            .modal, .notebook { width: 95%; padding: 20px; min-height: auto; }
+            .notebook h3 { font-size: 1.2rem; }
+            #diary-content { font-size: 0.9rem; }
+            
+            /* Minigame Mobile Adjustments */
+            .arcade-title { font-size: 2rem; }
+            .command-card { flex-direction: column; align-items: flex-start; gap: 15px; padding: 15px;}
+            .dropdowns { flex-direction: column; width: 100%; gap: 10px; }
+            .drop-group { width: 100%; }
+            .arcade-select { width: 100%; font-size: 1rem; }
+            .execute-btn { font-size: 1.2rem; padding: 15px; margin-top: 20px; }
+            
+            .zone-grid { gap: 10px; }
+            .zone-box { width: 30%; height: auto; padding: 10px 0; }
+            .zone-hub { width: 45%; }
+            
+            .gate-text { font-size: 2.5rem; }
+            
+            .qty { gap: 5px; }
+            .q-btn { width: 35px; height: 35px; } /* Larger touch targets */
+            .price-badge { width: 45px; padding: 8px 4px; }
+        }
+
     </style>
 </head>
 <body>
@@ -333,7 +383,7 @@
         <div id="mini-error"></div>
 
         <button class="execute-btn" id="seal-btn" onclick="attemptSeal()">⚡ EXECUTE STRATEGY ⚡</button>
-        <div style="text-align:center; color:#555; margin-top:30px; font-size:0.75rem; font-family: 'Courier New'; letter-spacing: 1px;">◆ HAWKINS NATIONAL LABORATORY ◆ OPERATION: VECNA ◆</div>
+        <div style="text-align:center; color:#555; margin-top:30px; font-size:0.75rem; font-family: 'Courier New'; letter-spacing: 1px; padding-bottom: 40px;">◆ HAWKINS NATIONAL LABORATORY ◆ OPERATION: VECNA ◆</div>
     </div>
 
     <div id="game-tools">
@@ -921,7 +971,6 @@
                 
                 inUpsideDown = false; warningActive = false; recoveryBoost = 1.35; 
                 
-                // --- TIME SKIP: ADVANCE TO NEXT CHAPTER BUGFIX ---
                 log(`Time lost to the Upside Down. The current chapter is over.`, "alert");
                 
                 totalRev += chapRev; 
@@ -931,8 +980,7 @@
 
                 if (curChapIdx < 2) {
                     curSlot = "Morning";
-                    // Do NOT increment curChapIdx here! This prevents the double skip bug.
-                    // The triggerCrisis function leads to startChapterLogic, which increments it safely.
+                    // Move to next chapter's crisis safely without double-skipping
                     setTimeout(() => { triggerCrisis(curChapIdx + 1); }, 1000);
                 } else {
                     // They survived a breach in Chapter 3, skip to Scorecard
